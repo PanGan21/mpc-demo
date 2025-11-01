@@ -1,6 +1,6 @@
 # Multi-Party Computation (MPC) Demo
 
-A toy implementation of a Multi-Party Computation system in Go, focusing on architecture and using Go channels for communication between parties.
+A toy implementation of a Multi-Party Computation system in Go, mocking communication between parties.
 
 ## Overview
 
@@ -139,18 +139,6 @@ Expected sum:           327
 ✅ MPC computation successful!
 ```
 
-## Project Structure
-
-```
-mpc-demo/
-├── go.mod              # Go module definition
-├── main.go             # Main demo program
-├── secret_sharing.go   # Shamir's Secret Sharing implementation
-├── party.go            # Party/node structure with channels
-├── mpc.go              # MPC protocol orchestrator
-└── README.md           # This file
-```
-
 ## Future Enhancements
 
 - [ ] Network-based communication (replace channels with TCP/gRPC)
@@ -162,19 +150,7 @@ mpc-demo/
 
 ## Educational Notes
 
-This is a **toy implementation** for educational purposes. It demonstrates:
-
-- Channel-based concurrency in Go
-- Cryptographic secret sharing
-- MPC protocol architecture
-
-For production use, you would need:
-
-- Network transport layer
-- Authentication and encryption
-- Malicious security guarantees
-- Performance optimizations
-- Formal security proofs
+This is a **toy implementation** for educational purposes.
 
 ## License
 
