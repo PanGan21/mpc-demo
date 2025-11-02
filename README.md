@@ -246,31 +246,6 @@ Shares are polynomial evaluations: `f_i(0), f_i(1), ..., f_i(n)`
 3. **Signature Shares**: Each node computes `s_i = k_i⁻¹ · (h + r · d_i)`
 4. **Combine**: Final signature `s = Σᵢ s_i`
 
-## Project Structure
-
-```
-mpc-demo/
-├── cmd/mpc-demo/
-│   ├── main.go              # Demo entry point
-│   └── network/
-│       └── simulator.go     # Network communication simulator
-├── internal/
-│   ├── dkg/
-│   │   └── dkg.go          # Distributed key generation
-│   ├── ecdsa/
-│   │   ├── curve.go        # Elliptic curve operations
-│   │   ├── point.go        # EC point arithmetic
-│   │   └── signature.go    # Signature structure
-│   ├── node/
-│   │   └── node.go         # MPC node implementation
-│   ├── secretsharing/
-│   │   ├── sharing.go      # Shamir's secret sharing
-│   │   └── ec_sharing.go   # EC-specific sharing
-│   └── signing/
-│       └── threshold.go    # Threshold signing protocol
-└── README.md
-```
-
 ## Limitations
 
 This is a **toy/educational implementation** with the following limitations:
