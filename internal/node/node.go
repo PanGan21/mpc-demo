@@ -134,14 +134,24 @@ func (n *Node) GetResult() *big.Int {
 
 // === DKG Methods ===
 
-// DKGGenerateSecretShare generates secret share for DKG
-func (n *Node) DKGGenerateSecretShare(numParties, threshold int) ([]secretsharing.Point, error) {
+// DKGGenerateSecretShare generates secret share for DKG with ZK proofs
+func (n *Node) DKGGenerateSecretShare(numParties, threshold int) ([]secretsharing.Point, []*ecdsa.Point, error) {
 	return n.dkg.GenerateSecretShare(numParties, threshold)
 }
 
 // DKGReceiveShare receives a secret share during DKG
 func (n *Node) DKGReceiveShare(fromID int, share *big.Int) {
 	n.dkg.ReceiveShare(fromID, share)
+}
+
+// DKGReceiveCommitments receives Pedersen commitments during DKG
+func (n *Node) DKGReceiveCommitments(fromID int, commitments []*ecdsa.Point) {
+	n.dkg.ReceiveCommitments(fromID, commitments)
+}
+
+// DKGVerifyShare verifies a received share against commitments
+func (n *Node) DKGVerifyShare(fromID int, share *big.Int) bool {
+	return n.dkg.VerifyShare(fromID, share)
 }
 
 // DKGComputePrivateKeyShare computes this node's share of the shared private key

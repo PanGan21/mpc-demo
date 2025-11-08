@@ -16,6 +16,7 @@ The implementation includes:
 - **Shamir's Secret Sharing** for distributing secrets
 - **Distributed Key Generation (DKG)** for collaborative key generation
 - **Threshold Signing Protocol** for distributed signature creation
+- **Zero-Knowledge Proofs** (Pedersen VSS and Schnorr proofs) for malicious security
 - **Network Simulator** for multi-party communication
 
 ## Architecture
@@ -87,7 +88,12 @@ graph TB
    - Signature share computation
    - Share combination into final signature
 
-5. **Network Simulator** (`cmd/mpc-demo/network/`)
+5. **Zero-Knowledge Proofs** (`internal/zkproof/`)
+   - Pedersen commitments for Verifiable Secret Sharing
+   - Schnorr proofs for signature share verification
+   - Malicious security guarantees
+
+6. **Network Simulator** (`cmd/mpc-demo/network/`)
    - Simulates P2P communication
    - Message routing between nodes
    - Protocol orchestration
@@ -220,6 +226,99 @@ Key achievements:
 3. **Correctness**: All honest parties compute the same public key and signature
 4. **Additive Homomorphism**: Public key aggregation works without private key reconstruction
 
+## Zero-Knowledge Proofs
+
+This implementation includes **zero-knowledge proofs (ZK proofs)** to provide **malicious security** - meaning nodes can verify that others are following the protocol correctly, even if they try to cheat.
+
+### What are Zero-Knowledge Proofs?
+
+Zero-knowledge proofs allow one party (the **prover**) to convince another party (the **verifier**) that they know a secret value, **without revealing the secret itself**. The verifier learns nothing about the secret except that the prover knows it.
+
+### Pedersen Verifiable Secret Sharing (VSS)
+
+In the DKG phase, we use **Pedersen commitments** to make secret sharing verifiable:
+
+```mermaid
+sequenceDiagram
+    participant Prover as Node i (Prover)
+    participant Verifier as Node j (Verifier)
+    
+    Note over Prover: Generate polynomial<br/>f(x) = a₀ + a₁x + ... + aₜxᵗ
+    Note over Prover: Create commitments<br/>Cⱼ = aⱼ·G + rⱼ·H
+    Prover->>Verifier: Commitments C₀, C₁, ..., Cₜ
+    Prover->>Verifier: Share f(j)
+    
+    Note over Verifier: Verify:<br/>f(j)·G = Σ(Cⱼ·j^j)
+    Verifier->>Verifier: ✓ Share is consistent<br/>with commitments
+    
+    Note over Verifier: Secret a₀ remains<br/>HIDDEN (only commitments revealed)
+```
+
+**How it works:**
+
+1. **Commitment Phase**: Each node creates Pedersen commitments to polynomial coefficients:
+   - `C_j = a_j·G + r_j·H` where:
+     - `a_j` = polynomial coefficient (secret)
+     - `r_j` = random blinding factor
+     - `G, H` = elliptic curve generators
+
+2. **Share Distribution**: Nodes send both:
+   - Shares: `f(i)` = polynomial evaluation at point `i`
+   - Commitments: Public commitments to coefficients
+
+3. **Verification**: Recipients verify that:
+   - `f(i)·G = Σ(C_j·i^j)` 
+   - This proves the share is consistent with the committed polynomial **without revealing the secret**
+
+**Security Properties:**
+- **Hiding**: Commitments reveal nothing about the secret
+- **Binding**: Cannot change the secret after committing
+- **Verifiability**: Can detect if shares are inconsistent
+
+### Schnorr Proofs for Signature Shares
+
+During threshold signing, nodes can prove they computed their signature share correctly using **Schnorr proofs**:
+
+```mermaid
+sequenceDiagram
+    participant Prover as Node i (Prover)
+    participant Verifier as Other Nodes
+    
+    Note over Prover: Knows: d_i (private key share)
+    Note over Prover: Public: Q_i = d_i·G
+    Note over Prover: Computes: s_i = k^(-1)·(h + r·d_i)
+    
+    Prover->>Prover: Choose random r, compute R = r·G
+    Prover->>Verifier: R (commitment)
+    Verifier->>Prover: Challenge c = H(R || Q_i || context)
+    Prover->>Prover: z = r + c·d_i
+    Prover->>Verifier: Proof (c, z)
+    
+    Note over Verifier: Verify: z·G = R + c·Q_i
+    Verifier->>Verifier: ✓ Prover knows d_i<br/>(without revealing it)
+```
+
+**Protocol Steps:**
+
+1. **Commitment**: Prover chooses random `r`, computes `R = r·G`, sends `R`
+2. **Challenge**: Verifier sends challenge `c = H(R || public_info || context)`
+3. **Response**: Prover computes `z = r + c·d_i` and sends `(c, z)`
+4. **Verification**: Verifier checks `z·G = R + c·Q_i`
+
+This proves the prover knows `d_i` (their private key share) **without revealing it**.
+
+### Why ZK Proofs Matter
+
+**Without ZK Proofs (Honest-but-Curious):**
+- Assumes nodes follow the protocol correctly
+- Vulnerable to malicious nodes sending fake shares
+- No way to detect cheating
+
+**With ZK Proofs (Malicious Security):**
+- Nodes can verify others are honest
+- Malicious nodes are detected and rejected
+- Protocol remains secure even with adversarial nodes
+
 ## Implementation Details
 
 ### Secret Sharing
@@ -250,10 +349,10 @@ Shares are polynomial evaluations: `f_i(0), f_i(1), ..., f_i(n)`
 
 This is a **toy/educational implementation** with the following limitations:
 
-- **Honest-but-curious security model** (no malicious security proofs)
-- **Simplified nonce generation** (nonces are reconstructed for simplicity)
-- **No zero-knowledge proofs** (would be needed for production)
-- **Simulated network** (uses channels, not real network)
+- **Simplified ZK proofs**: The ZK proof implementation demonstrates concepts but uses simplified verification (full production would verify complete mathematical relationships)
+- **Simplified nonce generation**: Nonces are reconstructed for simplicity (in production, would use more secure joint randomness)
+- **Simulated network**: Uses channels, not real network communication
+- **Educational focus**: Designed for learning, not production security
 
 ## Educational Notes
 
