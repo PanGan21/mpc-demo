@@ -65,25 +65,21 @@ graph TB
 ### Core Components
 
 1. **Secret Sharing** (`internal/secretsharing/`)
-
    - Shamir's Secret Sharing over finite fields
    - Supports threshold-based reconstruction (k-out-of-n)
    - Polynomial-based secret distribution
 
 2. **ECDSA Operations** (`internal/ecdsa/`)
-
    - Elliptic curve point arithmetic
    - Point addition and scalar multiplication
    - Signature generation and verification
 
 3. **Distributed Key Generation** (`internal/dkg/`)
-
    - Collaborative key pair generation
    - Private key shares computation
    - Public key aggregation
 
 4. **Threshold Signing** (`internal/signing/`)
-
    - Distributed nonce generation
    - Signature share computation
    - Share combination into final signature
@@ -267,15 +263,15 @@ In the DKG phase, we use **Pedersen commitments** to make secret sharing verifia
 sequenceDiagram
     participant Prover as Node i (Prover)
     participant Verifier as Node j (Verifier)
-    
+
     Note over Prover: Generate polynomial<br/>f(x) = a₀ + a₁x + ... + aₜxᵗ
     Note over Prover: Create commitments<br/>Cⱼ = aⱼ·G + rⱼ·H
     Prover->>Verifier: Commitments C₀, C₁, ..., Cₜ
     Prover->>Verifier: Share f(j)
-    
+
     Note over Verifier: Verify:<br/>f(j)·G = Σ(Cⱼ·j^j)
     Verifier->>Verifier: ✓ Share is consistent<br/>with commitments
-    
+
     Note over Verifier: Secret a₀ remains<br/>HIDDEN (only commitments revealed)
 ```
 
@@ -292,10 +288,11 @@ sequenceDiagram
    - Commitments: Public commitments to coefficients
 
 3. **Verification**: Recipients verify that:
-   - `f(i)·G = Σ(C_j·i^j)` 
+   - `f(i)·G = Σ(C_j·i^j)`
    - This proves the share is consistent with the committed polynomial **without revealing the secret**
 
 **Security Properties:**
+
 - **Hiding**: Commitments reveal nothing about the secret
 - **Binding**: Cannot change the secret after committing
 - **Verifiability**: Can detect if shares are inconsistent
@@ -308,17 +305,17 @@ During threshold signing, nodes can prove they computed their signature share co
 sequenceDiagram
     participant Prover as Node i (Prover)
     participant Verifier as Other Nodes
-    
+
     Note over Prover: Knows: d_i (private key share)
     Note over Prover: Public: Q_i = d_i·G
     Note over Prover: Computes: s_i = k^(-1)·(h + r·d_i)
-    
+
     Prover->>Prover: Choose random r, compute R = r·G
     Prover->>Verifier: R (commitment)
     Verifier->>Prover: Challenge c = H(R || Q_i || context)
     Prover->>Prover: z = r + c·d_i
     Prover->>Verifier: Proof (c, z)
-    
+
     Note over Verifier: Verify: z·G = R + c·Q_i
     Verifier->>Verifier: ✓ Prover knows d_i<br/>(without revealing it)
 ```
@@ -335,11 +332,13 @@ This proves the prover knows `d_i` (their private key share) **without revealing
 ### Why ZK Proofs Matter
 
 **Without ZK Proofs (Honest-but-Curious):**
+
 - Assumes nodes follow the protocol correctly
 - Vulnerable to malicious nodes sending fake shares
 - No way to detect cheating
 
 **With ZK Proofs (Malicious Security):**
+
 - Nodes can verify others are honest
 - Malicious nodes are detected and rejected
 - Protocol remains secure even with adversarial nodes
@@ -390,4 +389,4 @@ This implementation demonstrates:
 
 ## License
 
-Educational project - feel free to use and modify for learning purposes.
+MIT — see [`LICENSE`](LICENSE).
