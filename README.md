@@ -175,7 +175,8 @@ sequenceDiagram
 
 ### Prerequisites
 
-- Go 1.19 or later
+- Go 1.21 or later
+- Make (optional, but recommended)
 
 ### Installation
 
@@ -185,10 +186,34 @@ git clone <repository-url>
 cd mpc-demo
 
 # Install dependencies
-go mod tidy
+make tidy
 ```
 
-### Execute
+### Using the Makefile
+
+The project includes a `Makefile` with common tasks. Run `make help` to see all available targets:
+
+```
+  build          Build the binary
+  run            Run the demo directly
+  fmt            Format all Go source files
+  tidy           Tidy module dependencies
+  clean          Remove build artifacts
+```
+
+**Quick start:**
+
+```bash
+# Run the demo directly (no build step)
+make run
+
+# Or build a binary first, then run it
+make build && ./bin/mpc-demo
+```
+
+### Without Make
+
+If you don't have `make` installed, you can use `go` directly:
 
 ```bash
 go run cmd/mpc-demo/main.go
